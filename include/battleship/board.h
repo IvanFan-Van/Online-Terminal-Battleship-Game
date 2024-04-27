@@ -7,6 +7,17 @@
 #include <vector>
 
 class Board {
+private:
+  void printInstructions(int size) const;
+
+  void printBoardHeader() const;
+
+  void printBoardWithPlacement(int x, int y, int size, bool isVertical,
+                               bool isValid) const;
+
+  void printShipPlacement(int i, int j, int x, int y, int size, bool isVertical,
+                          bool isValid) const;
+
 public:
   char board[BOARD_SIZE][BOARD_SIZE];
   bool hits[BOARD_SIZE][BOARD_SIZE];
@@ -47,7 +58,7 @@ public:
 
   Point getRandomPoint();
 
-  void DisplayColorPlacement(int x, int y, int size, bool isVertical);
+  void displayColorPlacement(int x, int y, int size, bool isVertical);
 
   // 序列化
   string serialize();

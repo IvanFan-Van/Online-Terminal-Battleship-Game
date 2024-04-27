@@ -25,6 +25,75 @@ Board::Board(char board[BOARD_SIZE][BOARD_SIZE]) {
   }
 }
 
+void Board::printInstructions(int size) const {
+  cout << "Place a ship of size " << CYAN << BOLD << size << RESET_COLOR << endl
+       << endl;
+  cout << "Please use " << ITALIC << UNDERLINE << "wasd " << RESET_COLOR
+       << "or " << ITALIC << UNDERLINE << "arrow keys" << RESET_COLOR
+       << " to move your ship, \nOr press the " << BOLD << UNDERLINE << BLINKING
+       << "[  spacebar  ]" << RESET_COLOR
+       << " to change its orientation. \nNote: upperleft corner will be "
+          "fixed during rotation."
+       << endl
+       << endl;
+  cout << "When the ship is " << RED_BG << "red" << RESET_COLOR
+       << ", it is an invalid placement." << endl;
+  cout << "When it is " << BOLD << GREEN << "green" << RESET_COLOR
+       << ", it is valid!" << endl;
+  cout << "Press the " << BOLD << CYAN << "Enter" << RESET_COLOR
+       << " key to place this ship." << endl
+       << endl;
+}
+
+void Board::printBoardHeader() const {
+  cout << " ";
+  for (int i = 0; i < BOARD_SIZE; ++i) {
+    cout << " " << i;
+  }
+  cout << endl;
+}
+
+void Board::printBoardWithPlacement(int x, int y, int size, bool isVertical,
+                                    bool isValid) const {
+  for (int i = 0; i < BOARD_SIZE; ++i) {
+    cout << static_cast<char>('A' + i) << ' ';
+    for (int j = 0; j < BOARD_SIZE; ++j) {
+      printShipPlacement(i, j, x, y, size, isVertical, isValid);
+    }
+    cout << endl;
+  }
+}
+
+void Board::printShipPlacement(int i, int j, int x, int y, int size,
+                               bool isVertical, bool isValid) const {
+  if (isVertical) {
+    if (x <= i && i < x + size && y == j) {
+      cout << (isValid ? GREEN : RED_BG) << SHIP << RESET_COLOR << ' ';
+    } else {
+      cout << board[i][j] << ' ';
+    }
+  } else {
+    if (y <= j && j < y + size && x == i) {
+      if (j < y + size - 1 && !isValid) {
+        cout << RED_BG << SHIP << ' ' << RESET_COLOR;
+      } else {
+        cout << (isValid ? GREEN : RED_BG) << SHIP << RESET_COLOR << ' ';
+      }
+
+    } else {
+      cout << board[i][j] << ' ';
+    }
+  }
+}
+
+void Board::displayColorPlacement(int x, int y, int size, bool isVertical) {
+  clearScreen();
+  printInstructions(size);
+  printBoardHeader();
+  bool isValid = isValidPlacement(x, y, size, isVertical);
+  printBoardWithPlacement(x, y, size, isVertical, isValid);
+}
+
 void Board::display(bool showShips) {
   cout << "  0 1 2 3 4 5 6 7 8 9\n";
   for (int i = 0; i < BOARD_SIZE; ++i) {
@@ -209,88 +278,6 @@ Point Board::getRandomPoint() {
   p.x = rand() % BOARD_SIZE;
   p.y = rand() % BOARD_SIZE;
   return p;
-}
-
-void Board::DisplayColorPlacement(int x, int y, int size, bool isVertical) {
-  clearScreen();
-  cout << "Place a ship of size " << CYAN << BOLD << size << RESET_COLOR << endl
-       << endl;
-  cout << "Please use " << ITALIC << UNDERLINE << "wasd " << RESET_COLOR
-       << "or " << ITALIC << UNDERLINE << "arrow keys" << RESET_COLOR
-       << " to move your ship, \nOr press the " << BOLD << UNDERLINE << BLINKING
-       << "[  spacebar  ]" << RESET_COLOR
-       << " to change its orientation. \nNote: upperleft corner will be "
-          "fixed during rotation."
-       << endl
-       << endl;
-  cout << "When the ship is " << RED_BG << "red" << RESET_COLOR
-       << ", it is an invalid placement." << endl;
-  cout << "When it is " << BOLD << GREEN << "green" << RESET_COLOR
-       << ", it is valid!" << endl;
-  cout << "Press the " << BOLD << CYAN << "Enter" << RESET_COLOR
-       << " key to place this ship." << endl
-       << endl;
-
-  cout << "  0 1 2 3 4 5 6 7 8 9\n";
-  bool isValid = isValidPlacement(x, y, size, isVertical);
-  for (int i = 0; i < BOARD_SIZE; ++i) {
-    cout << char('A' + i) << ' ';
-    for (int j = 0; j < BOARD_SIZE; ++j) {
-      if (isVertical) { // when the ship is vertical:
-        if (x <= i && i < x + size &&
-            y == j) { // check if the ij-th block is under the ship to be placed
-          if (j < BOARD_SIZE - 1) { // if the block is not at the rightmost end,
-                                    // add a space after it
-            if (!(isValid)) {
-              cout << RED_BG << SHIP << RESET_COLOR << ' ';
-            } else {
-              cout << GREEN << SHIP << ' ' << RESET_COLOR;
-            }
-          } else {
-            if (!(isValid)) { // at the rightmost end -> no space added
-              cout << RED_BG << SHIP << RESET_COLOR;
-            } else {
-              cout << GREEN << SHIP << RESET_COLOR;
-            }
-          }
-        } else {
-          if (j < BOARD_SIZE - 1)
-            cout << board[i][j] << ' ';
-          else {
-            cout << board[i][j];
-          }
-        }
-      } else {
-        if (y <= j && j < y + size && x == i) {
-          if (j < BOARD_SIZE - 1) {
-            if (!(isValid)) {
-              if (j < y + size - 1) {
-                cout << RED_BG << SHIP << ' ' << RESET_COLOR;
-              } else {
-                cout << RED_BG << SHIP << RESET_COLOR << ' ';
-              }
-
-            } else {
-              cout << GREEN << SHIP << ' ' << RESET_COLOR;
-            }
-          } else {
-            if (!(isValid)) {
-              cout << RED_BG << SHIP << RESET_COLOR;
-            } else {
-              cout << GREEN << SHIP << RESET_COLOR;
-            }
-          }
-        } else {
-          if (j < BOARD_SIZE - 1)
-            cout << board[i][j] << ' ';
-          else {
-            cout << board[i][j];
-          }
-        }
-      }
-    }
-    cout << endl;
-  }
 }
 
 Board::Board(const Board &other) { copyFrom(other); }

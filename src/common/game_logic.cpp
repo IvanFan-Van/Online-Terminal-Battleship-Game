@@ -14,38 +14,38 @@ bool GameLogic::placeShips(Board &board, Ship &ship) {
   int x = prev_x == -1 ? STARTPOINT : prev_x;
   int y = prev_y == -1 ? STARTPOINT : prev_y;
   bool isVertical = true;
-  board.DisplayColorPlacement(x, y, shipSize, isVertical);
+  board.displayColorPlacement(x, y, shipSize, isVertical);
   while (!placed) {
     key = keyboard();
     switch (key) {
     case 'w':
       if (x > 0) {
         x -= 1;
-        board.DisplayColorPlacement(x, y, shipSize, isVertical);
+        board.displayColorPlacement(x, y, shipSize, isVertical);
       }
       break;
     case 'a':
       if (y > 0) {
         y -= 1;
-        board.DisplayColorPlacement(x, y, shipSize, isVertical);
+        board.displayColorPlacement(x, y, shipSize, isVertical);
       }
       break;
     case 's':
       if (x < BOARD_SIZE - (isVertical ? shipSize : 1)) {
         x += 1;
-        board.DisplayColorPlacement(x, y, shipSize, isVertical);
+        board.displayColorPlacement(x, y, shipSize, isVertical);
       }
       break;
     case 'd':
       if (y < BOARD_SIZE - (isVertical ? 1 : shipSize)) {
         y += 1;
-        board.DisplayColorPlacement(x, y, shipSize, isVertical);
+        board.displayColorPlacement(x, y, shipSize, isVertical);
       }
       break;
     case 'C': // change orientation
       if ((isVertical ? y : x) + shipSize <= BOARD_SIZE) {
         isVertical = !isVertical;
-        board.DisplayColorPlacement(x, y, shipSize, isVertical);
+        board.displayColorPlacement(x, y, shipSize, isVertical);
       }
       break;
     case 'Y': // choice made
