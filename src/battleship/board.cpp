@@ -223,7 +223,7 @@ void Board::DisplayColorPlacement(int x, int y, int size, bool isVertical) {
           "fixed during rotation."
        << endl
        << endl;
-  cout << "When the ship is" << RED_BG << " red" << RESET_COLOR
+  cout << "When the ship is " << RED_BG << "red" << RESET_COLOR
        << ", it is an invalid placement." << endl;
   cout << "When it is " << BOLD << GREEN << "green" << RESET_COLOR
        << ", it is valid!" << endl;
@@ -264,7 +264,12 @@ void Board::DisplayColorPlacement(int x, int y, int size, bool isVertical) {
         if (y <= j && j < y + size && x == i) {
           if (j < BOARD_SIZE - 1) {
             if (!(isValid)) {
-              cout << RED_BG << SHIP << RESET_COLOR << ' ';
+              if (j < y + size - 1) {
+                cout << RED_BG << SHIP << ' ' << RESET_COLOR;
+              } else {
+                cout << RED_BG << SHIP << RESET_COLOR << ' ';
+              }
+
             } else {
               cout << GREEN << SHIP << ' ' << RESET_COLOR;
             }
