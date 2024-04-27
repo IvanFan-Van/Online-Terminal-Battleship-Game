@@ -1,0 +1,8 @@
+*.exe
+*.o
+lib/**/*
+.vscode/**/*
+.vscode
+!lib/info.txt
+build
+savegame.txt
