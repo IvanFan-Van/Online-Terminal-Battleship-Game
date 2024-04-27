@@ -314,7 +314,7 @@ int main(int argc, char *argv[]) {
       )";
       printCentered(text, getTerminalWidth());
       cout << "\n\n";
-      cout << "按任意键继续";
+      cout << "Enter any key to continue...";
       cin.ignore(numeric_limits<streamsize>::max(), '\n');
       break;
     }
