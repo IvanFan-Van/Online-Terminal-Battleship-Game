@@ -25,9 +25,7 @@ Board::Board(char board[BOARD_SIZE][BOARD_SIZE]) {
   }
 }
 
-void Board::printInstructions(int size) const {
-  cout << "Place a ship of size " << CYAN << BOLD << size << RESET_COLOR << endl
-       << endl;
+void Board::printInstructions(int size, int remaining) const {
   cout << "Please use " << ITALIC << UNDERLINE << "wasd " << RESET_COLOR
        << "or " << ITALIC << UNDERLINE << "arrow keys" << RESET_COLOR
        << " to move your ship, \nOr press the " << BOLD << UNDERLINE << BLINKING
@@ -42,6 +40,9 @@ void Board::printInstructions(int size) const {
        << ", it is valid!" << endl;
   cout << "Press the " << BOLD << CYAN << "Enter" << RESET_COLOR
        << " key to place this ship." << endl
+       << endl;
+  cout << "Place a ship of size " << CYAN << BOLD << size << RESET_COLOR << " ("
+       << remaining << " left)" << endl
        << endl;
 }
 
@@ -86,9 +87,10 @@ void Board::printShipPlacement(int i, int j, int x, int y, int size,
   }
 }
 
-void Board::displayColorPlacement(int x, int y, int size, bool isVertical) {
+void Board::displayColorPlacement(int x, int y, int size, bool isVertical,
+                                  int remaining) {
   clearScreen();
-  printInstructions(size);
+  printInstructions(size, remaining);
   printBoardHeader();
   bool isValid = isValidPlacement(x, y, size, isVertical);
   printBoardWithPlacement(x, y, size, isVertical, isValid);

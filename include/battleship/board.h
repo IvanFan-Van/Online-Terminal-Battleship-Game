@@ -8,7 +8,7 @@
 
 class Board {
 private:
-  void printInstructions(int size) const;
+  void printInstructions(int size, int remaining) const;
 
   void printBoardHeader() const;
 
@@ -58,7 +58,8 @@ public:
 
   Point getRandomPoint();
 
-  void displayColorPlacement(int x, int y, int size, bool isVertical);
+  void displayColorPlacement(int x, int y, int size, bool isVertical,
+                             int remaining);
 
   // 序列化
   string serialize();
