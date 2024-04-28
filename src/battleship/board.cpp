@@ -65,24 +65,26 @@ void Board::printBoardWithPlacement(int x, int y, int size, bool isVertical,
   }
 }
 
-void Board::printShipPlacement(int i, int j, int x, int y, int size,
+void Board::printShipPlacement(int row, int col, int x, int y, int size,
                                bool isVertical, bool isValid) const {
+  // 船只垂直
   if (isVertical) {
-    if (x <= i && i < x + size && y == j) {
+    if (x <= row && row < x + size && y == col) {
       cout << (isValid ? GREEN : RED_BG) << SHIP << RESET_COLOR << ' ';
     } else {
-      cout << board[i][j] << ' ';
+      cout << board[row][col] << ' ';
     }
+    // 船只水平
   } else {
-    if (y <= j && j < y + size && x == i) {
-      if (j < y + size - 1 && !isValid) {
+    if (y <= col && col < y + size && x == row) {
+      if (col < y + size - 1 && !isValid) {
         cout << RED_BG << SHIP << ' ' << RESET_COLOR;
       } else {
         cout << (isValid ? GREEN : RED_BG) << SHIP << RESET_COLOR << ' ';
       }
 
     } else {
-      cout << board[i][j] << ' ';
+      cout << board[row][col] << ' ';
     }
   }
 }

@@ -54,13 +54,6 @@ void displayBoardsSideBySide(const Board &playerBoard, Board &opponentBoard,
 
 void clearScreen() { cout << "\033[2J\033[1;1H"; }
 
-void clearBoard() {
-  cout << "\033[8A]";
-  for (int i = 0; i < 11; i++) {
-    cout << "\033[2K\033[1A";
-  }
-}
-
 /**
  * @brief 清除屏幕上方的行数
  */

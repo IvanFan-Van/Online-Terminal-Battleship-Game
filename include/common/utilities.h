@@ -14,8 +14,6 @@ void displayBoardsSideBySide(const Board &playerBoard, Board &opponentBoard,
 
 void clearScreen();
 
-void clearBoard();
-
 /**
  * @brief 清除屏幕上方的行数
  */

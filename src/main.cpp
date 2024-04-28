@@ -13,7 +13,7 @@
 
 using namespace std;
 
-vector<string> options = {
+const vector<string> options = {
     "Computer", "Online", "Continue", "Tutorial", "Exit",
 };
 const int NUM_OPTIONS = options.size();
