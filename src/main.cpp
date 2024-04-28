@@ -57,7 +57,7 @@ void printProgressBar(size_t current, size_t total) {
 /**
  * @brief 显示游戏的Logo
  */
-void displayLogo() {
+void displayLogo(bool showAnimation) {
   const string art = R"(
         ____  ___  ______________    ___________ __  __________ 
        / __ )/   |/_  __/_  __/ /   / ____/ ___// / / /  _/ __ \
@@ -87,24 +87,34 @@ void displayLogo() {
   // 逐行打印LOGO
   int terminalWidth = getTerminalWidth();
   for (size_t col = 0; col <= max_length; ++col) {
-    for (const auto &line : lines) {
-      printCentered(line.substr(0, col), terminalWidth);
+    if (showAnimation) {
+      for (const auto &line : lines) {
+        printCentered(line.substr(0, col), terminalWidth);
+      }
+
+      // Print the progress bar at the bottom.
+      printProgressBar(col, max_length);
+
+      // Delay for demonstration purposes.
+      std::this_thread::sleep_for(std::chrono::milliseconds(25));
+    } else {
+      for (const auto &line : lines) {
+        printCentered(line, terminalWidth);
+      }
+
+      // Print the progress bar at the bottom.
+      printProgressBar(1, 1);
     }
-
-    // Print the progress bar at the bottom.
-    printProgressBar(col, max_length);
-
-    // Delay for demonstration purposes.
-    std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
     // Move the cursor back to the top.
     std::cout << "\033[" << lines.size() << "A";
   }
   // After the final iteration, move the cursor below the art and progress bar
   std::cout << "\033[" << lines.size() + 1 << "B" << std::endl;
-
-  this_thread::sleep_for(
-      chrono::milliseconds(500)); // Delay for demonstration purposes
+  if (showAnimation) {
+    this_thread::sleep_for(
+        chrono::milliseconds(500)); // Delay for demonstration purposes
+  }
 }
 
 /**
@@ -180,13 +190,13 @@ void chooseMode(int &selectedOption) {
   }
 }
 
-int start() {
+int start(bool showAnimation) {
   // Disable standard input buffering
   enableRawMode();
   // clear screen
   clearScreen();
   // Display the logo
-  displayLogo();
+  displayLogo(showAnimation);
   // Default to computer mode
   int selectedOption = 0;
   // Display the menu
@@ -287,25 +297,30 @@ void exit() {
 }
 
 int main(int argc, char *argv[]) {
+  bool showAnimation = true;
   while (true) {
     // Start the game
-    int option = start();
+    int option = start(showAnimation);
     // cout << "option: " << option << endl;
     switch (option) {
     case 0: {
       startOfflineGame();
+      showAnimation = true;
       break;
     }
     case 1: {
       startOnlineGame();
+      showAnimation = true;
       break;
     }
     case 2: {
       continueOfflineGame();
+      showAnimation = false;
       break;
     }
     case 3: {
       displayTutorial();
+      showAnimation = false;
       break;
     }
     case 4: {
