@@ -241,54 +241,48 @@ int start() {
   return selectedOption;
 }
 
-int main(int argc, char *argv[]) {
-  while (true) {
-    // Start the game
-    int option = start();
-    // cout << "option: " << option << endl;
-    switch (option) {
-    case 0: {
-      printCentered("Starting Game With Computer...", getTerminalWidth());
-      sleep(1); // Delay for demonstration purposes
-      Game offlineGame = Game();
-      offlineGame.start();
-      cout << "Exit game\n";
-      // offlineGame.saveGame();
+// Option 1
+void startOfflineGame() {
+  printCentered("Starting Game With Computer...", getTerminalWidth());
+  sleep(1); // Delay for demonstration purposes
+  Game offlineGame = Game();
+  offlineGame.start();
+  cout << "Exit game\n";
+}
+// Option 2
+void startOnlineGame() {
+  printCentered("Starting Game With People...", getTerminalWidth());
+  sleep(1); // Delay for demonstration purposes
+  string DEFAULT_IP = "43.143.114.119";
+  // 匹配成功
+  ClientGame onlineGame = ClientGame(DEFAULT_IP);
+  onlineGame.start();
 
-      break;
-    }
-    case 1: {
-      printCentered("Starting Game With People...", getTerminalWidth());
-      sleep(1); // Delay for demonstration purposes
-      string DEFAULT_IP = "43.143.114.119";
-      // 匹配成功
-      ClientGame onlineGame = ClientGame(DEFAULT_IP);
-      onlineGame.start();
-
-      cout << "Closing Game...\n";
-      onlineGame.stop();
-      break;
-    }
-    case 2: {
-      Game offlineGame = Game();
-      string filePath;
-      cout << "Load game from(default "
-              "is 'savegame.txt'): ";
-      getline(cin, filePath);
-      if (filePath.empty()) {
-        filePath = "savegame.txt";
-      }
-      bool success = offlineGame.loadGame(filePath);
-      if (!success) {
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        break;
-      }
-      offlineGame.start();
-      break;
-    }
-    case 3: {
-      clearScreen();
-      const string title = R"(
+  cout << "Closing Game...\n";
+  onlineGame.stop();
+}
+// Option 3
+void continueOfflineGame() {
+  Game offlineGame = Game();
+  string filePath;
+  cout << "Load game from(default "
+          "is 'savegame.txt'): ";
+  getline(cin, filePath);
+  if (filePath.empty()) {
+    filePath = "savegame.txt";
+  }
+  bool success = offlineGame.loadGame(filePath);
+  if (!success) {
+    cout << "Enter any key to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+  } else {
+    offlineGame.start();
+  }
+}
+// Option 4
+void displayTutorial() {
+  clearScreen();
+  const string title = R"(
             
         _______ _    _ _______ ____  _____  _____          _      
        |__   __| |  | |__   __/ __ \|  __ \|_   _|   /\   | |     
@@ -299,9 +293,9 @@ int main(int argc, char *argv[]) {
                                                                   
                                                                   
       )";
-      printCentered(title, getTerminalWidth());
+  printCentered(title, getTerminalWidth());
 
-      const string text = R"(
+  const string text = R"(
         Game Rules:
         1.  Each player has a fleet of ships placed on a 10x10 grid.
         2.  The ship consists of 
@@ -324,14 +318,40 @@ int main(int argc, char *argv[]) {
               Use "WASD" or arrow keys to navigate the board,
               and press ENTER to select.
       )";
-      printCentered(text, getTerminalWidth());
-      cout << "\n\n";
-      cout << "Enter any key to continue...";
-      cin.ignore(numeric_limits<streamsize>::max(), '\n');
+  printCentered(text, getTerminalWidth());
+  cout << "\n\n";
+  cout << "Enter any key to continue...";
+  cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+// Option 5
+void exit() {
+  printCentered("Thank You for Playing Battleship!", getTerminalWidth());
+}
+
+int main(int argc, char *argv[]) {
+  while (true) {
+    // Start the game
+    int option = start();
+    // cout << "option: " << option << endl;
+    switch (option) {
+    case 0: {
+      startOfflineGame();
+      break;
+    }
+    case 1: {
+      startOnlineGame();
+      break;
+    }
+    case 2: {
+      continueOfflineGame();
+      break;
+    }
+    case 3: {
+      displayTutorial();
       break;
     }
     case 4: {
-      printCentered("Thank You for Playing Battleship!\n", getTerminalWidth());
+      exit();
       return 0;
     }
     default: {
