@@ -35,6 +35,8 @@ public:
    */
   bool addCell(Point p);
 
+  bool placed();
+
   /**
    * @brief Get the cells occupied by the ship
    */

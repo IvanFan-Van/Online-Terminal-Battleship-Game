@@ -18,6 +18,8 @@ bool Ship::addCell(Point p) {
   return false;
 }
 
+bool Ship::placed() { return (int)cells.size() == size; }
+
 // 序列化
 string Ship::serialize() {
   ostringstream oss;

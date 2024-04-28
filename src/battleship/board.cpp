@@ -147,14 +147,12 @@ bool Board::isValidPlacement(int x, int y, int size, bool isVertical) {
 }
 
 bool Board::allShipsPlaced() {
-  for (int i = 0; i < BOARD_SIZE; ++i) {
-    for (int j = 0; j < BOARD_SIZE; ++j) {
-      if (board[i][j] == SHIP) {
-        return true;
-      }
+  for (Ship &ship : ships) {
+    if (!ship.placed()) {
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 void Board::placeShip(Ship &ship) {
