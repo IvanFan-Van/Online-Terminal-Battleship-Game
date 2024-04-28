@@ -20,11 +20,16 @@ char keyboard() {
 
 void disableBuffering(termios &oldSettings) {
   termios newSettings;
+  // STDIN_FILENO: Standard input file descriptor (0)
   tcgetattr(STDIN_FILENO, &oldSettings);
   newSettings = oldSettings;
+  // ICANON: Enable canonical mode (line buffering)
+  // ECHO: Enable echoing of input characters
   newSettings.c_lflag &= ~(ICANON | ECHO); // Disable line buffering and echoing
   newSettings.c_cc[VTIME] = 0;
-  newSettings.c_cc[VMIN] = 1; // Wait for at least one character
+  // Wait for at least one character
+  newSettings.c_cc[VMIN] = 1;
+  // TCSANOW: Terminal Control Set Attributes Now
   tcsetattr(STDIN_FILENO, TCSANOW, &newSettings);
 }
 
