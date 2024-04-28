@@ -2,15 +2,9 @@
 #include "client/client_game.h"
 #include "common/color.h"
 #include <chrono>
-#include <fstream>
 #include <iostream>
-#include <limits>
-#include <sstream>
 #include <string>
-#include <sys/ioctl.h>
-#include <termios.h>
 #include <thread>
-#include <unistd.h>
 #include <vector>
 
 #define KEY_UP 65
@@ -19,34 +13,10 @@
 
 using namespace std;
 
-struct termios orig_termios;
 vector<string> options = {
     "Computer", "Online", "Continue", "Tutorial", "Exit",
 };
 const int NUM_OPTIONS = options.size();
-
-// 获取终端的宽度
-int getTerminalWidth() {
-  struct winsize w;
-  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-  return w.ws_col;
-}
-
-/**
- * @brief 禁用标准输入的缓冲区
- */
-void enableRawMode() {
-  tcgetattr(STDIN_FILENO, &orig_termios);
-  struct termios raw = orig_termios;
-  raw.c_lflag &= ~(ECHO | ICANON);
-  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-}
-
-/**
- * @brief 恢复标准输入的缓冲区
- */
-
-void disableRawMode() { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios); }
 
 /**
  * @brief 打印进度条
@@ -160,18 +130,6 @@ void displayMenu(int selectedOption) {
   cout << string(padding4, ' ') << line4 << endl;
 
   cout.flush();
-}
-
-/**
- * @brief 清除屏幕上方的行数
- */
-void clearLinesAbove(int numLines) {
-  for (int i = 0; i < numLines; ++i) {
-    // Move the cursor up
-    std::cout << "\033[A";
-    // Erase the line
-    std::cout << "\033[K";
-  }
 }
 
 /**
