@@ -128,9 +128,10 @@ void displayMenu(int selectedOption) {
       "(Using the arrow keys to navigate, press Enter to select)\n";
 
   for (size_t i = 0; i < options.size(); ++i) {
-    string optionLine = ((int)i == selectedOption
-                             ? YELLOW + "=> " + options[i] + " <=" + RESET_COLOR
-                             : "   " + options[i] + "   ");
+    string optionLine =
+        ((int)i == selectedOption
+             ? YELLOW + BOLD + "=> " + options[i] + " <=" + RESET_COLOR
+             : "   " + options[i] + "   ");
     int padding = (terminalWidth - strlen("=> Computer <=")) / 2;
     cout << string(padding, ' ') << optionLine << endl;
   }
