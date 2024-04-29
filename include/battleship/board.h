@@ -61,6 +61,7 @@ public:
   void displayColorPlacement(int x, int y, int size, bool isVertical,
                              int remaining);
 
+  int getShipsLeft() const;
   // 序列化
   string serialize();
   // 反序列化

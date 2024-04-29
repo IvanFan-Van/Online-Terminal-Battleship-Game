@@ -18,7 +18,12 @@ bool Ship::addCell(Point p) {
   return false;
 }
 
-bool Ship::placed() { return (int)cells.size() == size; }
+bool Ship::placed() { return (int)cells.size() == size; };
+
+/**
+ * @brief Check if the ship is sunk
+ */
+bool Ship::isSunk() const { return hits == size; }
 
 // 序列化
 string Ship::serialize() {

@@ -282,6 +282,16 @@ Point Board::getRandomPoint() {
   return p;
 }
 
+int Board::getShipsLeft() const {
+  int count = 0;
+  for (const Ship &ship : ships) {
+    if (!ship.isSunk()) {
+      count++;
+    }
+  }
+  return count;
+}
+
 Board::Board(const Board &other) { copyFrom(other); }
 
 void Board::copyFrom(const Board &other) {

@@ -23,7 +23,7 @@ public:
   /**
    * @brief Check if the ship is sunk
    */
-  bool isSunk() { return hits == size; }
+  bool isSunk() const;
 
   /**
    * @brief Add a cell to the ship

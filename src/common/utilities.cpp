@@ -49,6 +49,10 @@ void displayBoardsSideBySide(const Board &playerBoard, Board &opponentBoard,
     }
     cout << endl;
   }
+  cout << "    ships survived: " << GREEN << playerBoard.getShipsLeft()
+       << RESET_COLOR << "      "
+       << "ships survived: " << GREEN << opponentBoard.getShipsLeft()
+       << RESET_COLOR << endl;
   cout << "       Your Board           Opponent's Board" << endl;
 }
 
