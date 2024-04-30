@@ -9,6 +9,7 @@ using namespace std;
 
 typedef unsigned long SessionId;
 
+// 会话管理器
 class SessionManager {
 public:
   // 会话和游戏的映射

@@ -1,5 +1,6 @@
 
 #include "common/action.h"
+#include "common/thread_pool.h"
 #include "server/session_manager.h"
 
 #include <errno.h>
@@ -10,93 +11,17 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <atomic>
-#include <condition_variable>
-#include <functional>
-#include <future>
-#include <mutex>
-#include <queue>
-#include <thread>
-
 using namespace std;
 
 static const int PORT = 3004;
 static const int MAX_CONNECTIONS = 1024;
 
-// 会话管理器
-
-// 线程池
-class ThreadPool {
-private:
-  atomic<bool> stop;             // 是否停止
-  vector<thread> workers;        // 线程
-  queue<function<void()>> tasks; // 任务队列
-
-  mutex queue_mutex;            // 任务队列锁
-  condition_variable condition; // 条件变量
-
-public:
-  ThreadPool(size_t num_threads) : stop(false) {
-    for (size_t i = 0; i < num_threads; i++) {
-      workers.emplace_back([this] {
-        while (true) {
-          function<void()> task;
-          {
-            // 获取任务
-            unique_lock<mutex> lock(this->queue_mutex);
-            this->condition.wait(lock, [this] {
-              // 等待任务队列不为空或者停止
-              return this->stop.load() || !this->tasks.empty();
-            });
-            if (this->stop.load() && this->tasks.empty()) {
-              return;
-            }
-            task = move(this->tasks.front());
-            this->tasks.pop();
-          }
-          task();
-        }
-      });
-    }
-  }
-
-  ~ThreadPool() {
-    {
-      unique_lock<mutex> lock(queue_mutex);
-      stop.store(true);
-    }
-    condition.notify_all();
-    for (thread &worker : workers) {
-      worker.join();
-    }
-  }
-
-  template <class F, class... Args>
-  auto enqueue(F &&f, Args &&...args)
-      -> future<typename result_of<F(Args...)>::type> {
-    using return_type = typename std::result_of<F(Args...)>::type;
-
-    auto task = std::make_shared<std::packaged_task<return_type()>>(
-        std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-
-    std::future<return_type> res = task->get_future();
-    {
-      std::unique_lock<std::mutex> lock(queue_mutex);
-
-      if (stop)
-        throw std::runtime_error("enqueue on stopped ThreadPool");
-
-      tasks.emplace([task]() { (*task)(); });
-    }
-    condition.notify_one();
-    return res;
-  }
-};
-
 unordered_map<string, int> waiting_list;         // 等待队列
 unordered_map<int, SessionId> client_game_table; // 客户端和游戏会话ID的映射
 mutex waiting_list_mutex;                        // 等待队列锁
-mutex client_game_table_mutex; // 客户端和游戏会话ID的映射表锁
+mutex client_game_table_mutex;  // 客户端和游戏会话ID的映射表锁
+SessionManager session_manager; // 会话管理器
+ThreadPool thread_pool(4);      // 线程池
 
 int main() {
 
@@ -153,9 +78,6 @@ int main() {
   }
 
   struct epoll_event events[MAX_CONNECTIONS];
-
-  SessionManager session_manager;
-  ThreadPool thread_pool(4);
   // 事件循环
   while (true) {
     int nfds = epoll_wait(epoll_fd, events, MAX_CONNECTIONS, -1);
@@ -233,7 +155,7 @@ int main() {
           string match_code = string(action.data);
 
           // 将匹配请求加入线程池
-          thread_pool.enqueue([match_code, activate_fd, &session_manager] {
+          thread_pool.enqueue([match_code, activate_fd] {
             // 为waiting_list加锁
             unique_lock<mutex> waiting_lock(waiting_list_mutex);
 
