@@ -35,7 +35,7 @@ private:
    *
    * @param board The board on which to place the ships.
    */
-  void init(Board &board);
+  void init();
 
   /**
    * @brief Executes the player's move.
@@ -65,6 +65,8 @@ private:
   void handleMessage(const string &message);
 
   void waitGameStart();
+
+  void joinGame();
 
 public:
   /**

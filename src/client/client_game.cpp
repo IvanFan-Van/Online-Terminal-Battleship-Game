@@ -4,18 +4,18 @@
 
 using namespace std;
 
-void ClientGame::init(Board &board) {
+void ClientGame::init() {
   // 初始化船只并往board上放置
   for (int shipSize : SHIPS) {
     Ship ship(shipSize);
-    gameLogic.placeShips(board, ship);
+    gameLogic.placeShips(playerBoard, ship);
   }
 
   // 发送初始化棋盘行为
-  board.display(true);
+  playerBoard.display(true);
   // cout << "size of GameAction: " << sizeof(GameAction) << endl;
   // 初始化棋盘
-  GameAction initAction(INIT, board.serialize());
+  GameAction initAction(INIT, playerBoard.serialize());
   string data = initAction.serialize();
   // cout << "size of initAction: " << sizeof(initAction) << endl;
 
@@ -199,15 +199,10 @@ void ClientGame::waitGameStart() {
     checkStart();
     sleep(1);
   }
+  cout << "Game started!\n";
 }
 
-void ClientGame::start() {
-  // 连接服务器
-  if (!client.connect(ip, 3004)) {
-    cout << "connect failed\n";
-    stop();
-  };
-
+void ClientGame::joinGame() {
   // 获取匹配码
   cout << "Enter Match Code: ";
   string match_code;
@@ -257,14 +252,20 @@ void ClientGame::start() {
       break;
     }
   }
+}
 
+void ClientGame::start() {
+  // 连接服务器
+  if (!client.connect(ip, 3004)) {
+    cout << "connect failed\n";
+    stop();
+  };
+  // 加入游戏
+  joinGame();
   // 初始化棋盘
-  init(playerBoard);
-
+  init();
+  // 等待游戏开始
   waitGameStart();
-
-  cout << "Game started!\n";
-
   while (true) {
     string message;
     if (!client.recv(message, 1024)) {
