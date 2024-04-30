@@ -193,7 +193,7 @@ void ServerGame::handleGetGameStatusAction(const GameAction &action,
   // 向客户端发送自己棋盘信息
   Board &playerBoard = boards[client_fd];
   string serializedPlayerBoard = playerBoard.serialize();
-  cout << "展示序列化后的玩家棋盘信息: \n" << serializedPlayerBoard << endl;
+  // cout << "展示序列化后的玩家棋盘信息: \n" << serializedPlayerBoard << endl;
   if (send(client_fd, serializedPlayerBoard.c_str(),
            serializedPlayerBoard.size(), 0) == -1) {
     cout << "Failed to send player board to client " << client_fd << endl;
@@ -212,12 +212,13 @@ void ServerGame::handleGetGameStatusAction(const GameAction &action,
   int opponent_fd = client_fd == player1 ? player2 : player1;
   Board &opponentBoard = boards[opponent_fd];
   string serializedOpponentBoard = opponentBoard.serialize();
-  cout << "展示序列化后的对手棋盘信息: \n" << serializedOpponentBoard << endl;
+  // cout << "展示序列化后的对手棋盘信息: \n" << serializedOpponentBoard <<
+  // endl;
   if (send(client_fd, serializedOpponentBoard.c_str(),
            serializedOpponentBoard.size(), 0) == -1) {
     cout << "Failed to send opponent board to client " << client_fd << endl;
   };
-  cout << "序列化信息发送成功" << endl;
+  cout << "Successfully sent game status to client " << client_fd << endl;
 }
 
 /**

@@ -1,6 +1,6 @@
 
 #include "common/action.h"
-#include "server/server_game.h"
+#include "server/session_manager.h"
 
 #include <errno.h>
 #include <iostream>
@@ -9,10 +9,6 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <unordered_map>
-
-#include <ctime>
-#include <random>
 
 #include <atomic>
 #include <condition_variable>
@@ -24,42 +20,10 @@
 
 using namespace std;
 
-typedef unsigned long SessionId;
-
 static const int PORT = 3004;
 static const int MAX_CONNECTIONS = 1024;
 
 // 会话管理器
-class SessionManager {
-public:
-  unordered_map<SessionId, ServerGame> games;
-  SessionManager(){};
-
-  SessionId create_session(int client1, int client2) {
-    SessionId session_id = generate_session_id();
-    ServerGame game(client1, client2);
-    games[session_id] = game;
-    return session_id;
-  }
-
-  ServerGame &get_game(SessionId session_id) { return games[session_id]; }
-
-private:
-  SessionId generate_session_id() {
-    // 随机数生成器
-    static random_device rd;
-    // 生成器
-    static mt19937_64 generator(rd());
-    uniform_int_distribution<SessionId> distribution;
-
-    SessionId session_id = 0;
-    do {
-      session_id = distribution(generator);
-    } while (games.count(session_id) > 0);
-
-    return session_id;
-  }
-};
 
 // 线程池
 class ThreadPool {
@@ -142,6 +106,8 @@ int main() {
     return 1;
   }
 
+  cout << "Server started on port " << PORT << endl;
+
   // 设置地址重用
   int opt = 1;
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
@@ -160,10 +126,14 @@ int main() {
     return 1;
   }
 
+  cout << "Binding successful\n";
+
   if (listen(server_fd, MAX_CONNECTIONS) < 0) {
     perror("listen");
     return 1;
   }
+
+  cout << "Listening...\n";
 
   int epoll_fd = epoll_create1(0);
   if (epoll_fd == -1) {
