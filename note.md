@@ -59,3 +59,14 @@ void ClientGame::handleMessage(const string &rawMessage)
 else branch
 
 尽管十六进制一样, 但是还是进入了else branch
+
+
+# 需要好好管理socket资源
+
+问题描述:
+在服务端以及客户端都没有显示的关闭socket时, 客户端 socket 调用 recv 函数返回 0, 显示对端关闭了连接. 
+
+问题排查:
+1. 服务端中的客户端 socket 关闭连接的分支并没有被执行, 说明客户端并没有显示的关闭连接
+2. 使用 ```pgrep <program_name>``` 查看程序的进程号, 然后使用 ```cat \proc\<process_id>\fd``` 查看程序打开的文件, 发现服务端程序在第二个客户端 socket 接入并发送匹配码成功匹配时, 就会关闭第一个以及第二个客户端的 socket.
+3. 排查问题, 既然server中没有显示的关闭socket, 那么就是在其他代码中关闭了, 排查到 SessionManager类时发现其在构造器内创建了 ServerGame 类, 而 ServerGame 类在析构器中关闭了 socket. 由于 ServerGame被创建在栈上, 所以在SessionManager 的 create_session 函数结束时, ServerGame对象会被析构, 从而关闭了socket.

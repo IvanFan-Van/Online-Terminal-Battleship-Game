@@ -9,6 +9,14 @@
 
 using namespace std;
 
-enum ActionType { SHOOT, INIT, CHECK_WIN, START, GET_GAME_STATUS, DEFAULT };
+enum ActionType {
+  SHOOT,
+  INIT,
+  CHECK_WIN,
+  START,
+  GET_GAME_STATUS,
+  DEFAULT,
+  JOIN
+};
 
 #endif // ACTION_H

@@ -38,6 +38,8 @@ public:
    */
   ServerGame(int fd1, int fd2);
 
+  ServerGame();
+
   ~ServerGame();
 
   // 行为处理调度器
@@ -54,6 +56,8 @@ public:
   void notifyPlayerTurn(int client_fd);
 
   void switchTurn();
+
+  void stop();
 };
 
 #endif // SERVERGAME_H

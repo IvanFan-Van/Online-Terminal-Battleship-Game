@@ -22,6 +22,9 @@ std::ostream &operator<<(std::ostream &os, const ActionType &actionType) {
   case ActionType::DEFAULT:
     os << "DEFAULT";
     break;
+  case ActionType::JOIN:
+    os << "JOIN";
+    break;
   }
   return os;
 }

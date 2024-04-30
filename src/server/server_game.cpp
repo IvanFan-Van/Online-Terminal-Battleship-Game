@@ -26,10 +26,19 @@ ServerGame::ServerGame(int fd1, int fd2) {
   playerTurns.emplace(fd2, false);
 }
 
+ServerGame::ServerGame() {
+  player1 = -1;
+  player2 = -1;
+  currentPlayer = -1;
+}
+
 /**
  * 析构函数
  */
-ServerGame::~ServerGame() {
+ServerGame::~ServerGame() {}
+
+void ServerGame::stop() {
+  // 关闭连接
   if (player1 != -1) {
     close(player1);
   }
@@ -243,5 +252,8 @@ void ServerGame::switchTurn() {
  * 判断是否初始化完毕
  */
 bool ServerGame::fullyInitialized() {
+  cout << "Checking if both players have initialized the board..." << endl;
+  cout << "player(" << player1 << ")'s board: " << boards[player1];
+  cout << "player(" << player2 << ")'s board: " << boards[player2];
   return boards[player1].allShipsPlaced() && boards[player2].allShipsPlaced();
 }

@@ -209,34 +209,50 @@ void ClientGame::start() {
 
   // 获取匹配码
   cout << "Enter Match Code: ";
-  string buffer;
-  getline(cin, buffer);
-  while (!regex_match(buffer, regex("\\d{4}"))) {
+  string match_code;
+  getline(cin, match_code);
+  while (!regex_match(match_code, regex("\\d{4}"))) {
     cout << RED << "Invalid match code. Please enter a 4-digit number: "
          << RESET_COLOR;
-    getline(cin, buffer);
+    getline(cin, match_code);
   }
-  if (!client.send(buffer)) {
+
+  GameAction action;
+  action.type = JOIN;
+  action.data = match_code;
+  string data = action.serialize();
+  if (!client.send(data.c_str(), data.size())) {
     cout << "send failed\n";
     stop();
   }
 
   // 等待匹配成功
-  buffer.clear();
-  if (!client.recv(buffer, 1024)) {
+  char buffer[1024];
+  memset(buffer, 0, sizeof(buffer));
+  int valread = recv(client.getSocketFd(), buffer, sizeof(buffer), 0);
+  if (valread < 0) {
     cout << "recv failed\n";
     stop();
   }
   cout << buffer << endl;
 
-  while (buffer != "Match Success") {
-    buffer.clear();
-    if (!client.recv(buffer, 1024)) {
+  string receivedData;
+  receivedData.assign(buffer, valread);
+  while (receivedData != "Match Success") {
+    memset(buffer, 0, sizeof(buffer));
+    int valread = recv(client.getSocketFd(), buffer, sizeof(buffer), 0);
+    cout << "阻塞失败..." << endl;
+    if (valread < 0) {
       cout << "recv failed\n";
-      stop();
+      break;
+    } else if (valread == 0) {
+      cout << "Connection closed by server\n";
     }
 
-    if (buffer == "Match Success") {
+    receivedData.assign(buffer, valread);
+    cout << "Received: " << buffer << "\n";
+    if (receivedData == "Match Success") {
+      cout << "Match Success\n";
       break;
     }
   }

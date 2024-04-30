@@ -222,7 +222,8 @@ void startOfflineGame() {
 void startOnlineGame() {
   printCentered("Starting Game With People...", getTerminalWidth());
   sleep(1); // Delay for demonstration purposes
-  string DEFAULT_IP = "43.143.114.119";
+  // string DEFAULT_IP = "43.143.114.119";
+  string DEFAULT_IP = "127.0.0.1";
   // 匹配成功
   ClientGame onlineGame = ClientGame(DEFAULT_IP);
   onlineGame.start();
