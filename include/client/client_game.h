@@ -2,9 +2,19 @@
 #define CLIENTGAME_H
 
 #include "battleship/board.h"
+#include "battleship/game.h"
 #include "client/ctcpclient.h"
-#include "common/game_logic.h"
+#include "common/action.h"
+#include "common/constants.h"
+#include "common/game_action.h"
+#include "common/utilities.h"
+
+#include <algorithm>
+#include <iostream>
+#include <regex>
 #include <string>
+#include <sys/socket.h>
+#include <unistd.h>
 #include <unordered_map>
 
 using namespace std;
@@ -52,6 +62,10 @@ private:
 
   void handleLost();
 
+  void handleMessage(const string &message);
+
+  void waitGameStart();
+
 public:
   /**
    * @brief Default constructor for the Game class.
@@ -71,8 +85,6 @@ public:
   void start();
 
   void stop();
-
-  void handleMessage(const string &message);
 };
 
 #endif // CLIENTGAME_H

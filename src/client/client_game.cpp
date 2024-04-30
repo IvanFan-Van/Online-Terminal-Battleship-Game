@@ -1,16 +1,6 @@
 #include "client/client_game.h"
-#include "battleship/game.h"
-#include "client/ctcpclient.h"
-#include "common/action.h"
-#include "common/constants.h"
-#include "common/game_action.h"
-// #include "common/serialization.h"
-#include "common/utilities.h"
-#include <algorithm>
-#include <iostream>
-#include <regex>
-#include <sys/socket.h>
-#include <unistd.h>
+
+#include <thread>
 
 using namespace std;
 
@@ -200,6 +190,17 @@ void ClientGame::handleMessage(const string &rawMessage) {
   }
 }
 
+void ClientGame::waitGameStart() {
+  // 等待游戏开始
+  if (!gameStarted) {
+    cout << "Waiting for the other player to initialize the board...\n";
+  }
+  while (!gameStarted) {
+    checkStart();
+    sleep(1);
+  }
+}
+
 void ClientGame::start() {
   // 连接服务器
   if (!client.connect(ip, 3004)) {
@@ -260,14 +261,7 @@ void ClientGame::start() {
   // 初始化棋盘
   init(playerBoard);
 
-  // 等待游戏开始
-  if (!gameStarted) {
-    cout << "Waiting for the other player to initialize the board...\n";
-  }
-  while (!gameStarted) {
-    checkStart();
-    sleep(1);
-  }
+  waitGameStart();
 
   cout << "Game started!\n";
 
