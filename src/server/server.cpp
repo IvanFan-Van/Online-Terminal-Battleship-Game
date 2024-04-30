@@ -24,8 +24,7 @@
 
 using namespace std;
 
-unordered_map<string, int> waiting_list;             // 等待队列
-unordered_map<int, unsigned long> client_game_table; // 客户端和游戏会话ID的映射
+typedef unsigned long SessionId;
 
 static const int PORT = 3004;
 static const int MAX_CONNECTIONS = 1024;
@@ -33,27 +32,27 @@ static const int MAX_CONNECTIONS = 1024;
 // 会话管理器
 class SessionManager {
 public:
-  unordered_map<unsigned long, ServerGame> games;
+  unordered_map<SessionId, ServerGame> games;
   SessionManager(){};
 
-  unsigned long create_session(int client1, int client2) {
-    unsigned long session_id = generate_session_id();
+  SessionId create_session(int client1, int client2) {
+    SessionId session_id = generate_session_id();
     ServerGame game(client1, client2);
     games[session_id] = game;
     return session_id;
   }
 
-  ServerGame &get_game(unsigned long session_id) { return games[session_id]; }
+  ServerGame &get_game(SessionId session_id) { return games[session_id]; }
 
 private:
-  unsigned long generate_session_id() {
+  SessionId generate_session_id() {
     // 随机数生成器
     static random_device rd;
     // 生成器
     static mt19937_64 generator(rd());
-    uniform_int_distribution<unsigned long> distribution;
+    uniform_int_distribution<SessionId> distribution;
 
-    unsigned long session_id = 0;
+    SessionId session_id = 0;
     do {
       session_id = distribution(generator);
     } while (games.count(session_id) > 0);
@@ -130,7 +129,13 @@ public:
   }
 };
 
+unordered_map<string, int> waiting_list;         // 等待队列
+unordered_map<int, SessionId> client_game_table; // 客户端和游戏会话ID的映射
+mutex waiting_list_mutex;                        // 等待队列锁
+mutex client_game_table_mutex; // 客户端和游戏会话ID的映射表锁
+
 int main() {
+
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (server_fd == -1) {
     perror("socket failed");
@@ -219,8 +224,10 @@ int main() {
           perror("epoll_ctl: client_fd");
           return 1;
         }
-      } else {
-        // 处理客户端请求
+      }
+      // 处理客户端请求
+      else {
+        // 接收数据并解析
         char buffer[1024];
         int bytes_read = read(activate_fd, buffer, sizeof(buffer));
 
@@ -248,48 +255,66 @@ int main() {
           continue;
         }
 
-        // 处理客户端请求
+        // 检查是否为JOIN请求
         string data(buffer, bytes_read);
         GameAction action = GameAction::deserialize(data);
         if (action.type == ActionType::JOIN) {
+          // 解析匹配码
           string match_code = string(action.data);
 
-          // 查看等待队列中是否有匹配的玩家
-          if (waiting_list.count(match_code) > 0) {
+          // 将匹配请求加入线程池
+          thread_pool.enqueue([match_code, activate_fd, &session_manager] {
+            // 为waiting_list加锁
+            unique_lock<mutex> waiting_lock(waiting_list_mutex);
 
-            // 匹配成功
-            int client1 = waiting_list[match_code];
-            int client2 = activate_fd;
+            // 查看等待队列中是否有匹配的玩家
+            if (waiting_list.count(match_code) > 0) {
+              // 匹配成功
+              int client1 = waiting_list[match_code];
+              int client2 = activate_fd;
 
-            cout << "Match found between " << client1 << " and " << client2
-                 << endl;
+              cout << "Match found between " << client1 << " and " << client2
+                   << endl;
 
-            // 从等待队列中删除
-            waiting_list.erase(match_code);
-            // 创建游戏会话
-            unsigned long session_id =
-                session_manager.create_session(client1, client2);
-            // 更新客户端和游戏会话ID的映射表
-            client_game_table[client1] = session_id;
-            client_game_table[client2] = session_id;
-            // 发送游戏开始信息
-            string start_message = "Match Success";
-            send(client1, start_message.c_str(), start_message.size(), 0);
-            send(client2, start_message.c_str(), start_message.size(), 0);
-            cout << "Game session ID: " << session_id << endl;
-            cout << "Successfully notified clients\n";
-          } else {
-            cout << "No match found for client " << activate_fd << endl;
-            // 匹配失败, 将玩家加入等待队列
-            waiting_list[match_code] = activate_fd;
-            // 发送等待信息
-            string waiting_message = "Waiting for match...";
-            send(activate_fd, waiting_message.c_str(), waiting_message.size(),
-                 0);
-          }
+              // 从等待队列中删除
+              waiting_list.erase(match_code);
+              // 释放waiting_list锁
+              waiting_lock.unlock();
+
+              // 创建游戏会话
+              SessionId session_id =
+                  session_manager.create_session(client1, client2);
+              // 为client_game_table加锁
+              unique_lock<mutex> game_table_lock(client_game_table_mutex);
+              // 更新客户端和游戏会话ID的映射表
+              client_game_table[client1] = session_id;
+              client_game_table[client2] = session_id;
+              // 释放client_game_table锁
+              game_table_lock.unlock();
+
+              // 发送游戏开始信息
+              string start_message = "Match Success";
+              send(client1, start_message.c_str(), start_message.size(), 0);
+              send(client2, start_message.c_str(), start_message.size(), 0);
+              cout << "Game session ID: " << session_id << endl;
+              cout << "Successfully notified clients\n";
+            }
+            // 匹配失败
+            else {
+              cout << "No match found for client " << activate_fd << endl;
+              // 匹配失败, 将玩家加入等待队列
+              waiting_list[match_code] = activate_fd;
+              // 释放waiting_list锁
+              waiting_lock.unlock();
+              // 发送等待信息
+              string waiting_message = "Waiting for match...";
+              send(activate_fd, waiting_message.c_str(), waiting_message.size(),
+                   0);
+            }
+          });
         } else {
           // 获取游戏会话ID
-          unsigned long session_id = client_game_table[activate_fd];
+          SessionId session_id = client_game_table[activate_fd];
           // 获取游戏
           ServerGame &game = session_manager.get_game(session_id);
           // 处理游戏请求
