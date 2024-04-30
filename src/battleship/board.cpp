@@ -147,6 +147,9 @@ bool Board::isValidPlacement(int x, int y, int size, bool isVertical) {
 }
 
 bool Board::allShipsPlaced() {
+  if (ships.size() != sizeof(SHIPS) / sizeof(int)) {
+    return false;
+  }
   for (Ship &ship : ships) {
     if (!ship.placed()) {
       return false;
